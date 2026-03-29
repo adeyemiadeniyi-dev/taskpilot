@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createPlan, PlanResponse } from "@/lib/api";
+import { createPlan } from "@/lib/api";
+import { PlanResponse } from "@/lib/api";
 
 export default function HomePage() {
   const [goal, setGoal] = useState("");
