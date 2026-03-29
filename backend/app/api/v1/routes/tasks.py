@@ -2,7 +2,7 @@ import os
 from datetime import date
 from typing import Dict, List
 
-from app.schemas.planning import (
+from app.api.v1.schemas.planning import (
     PlanSummaryResponse,
     Task,
     TaskStatusUpdate,

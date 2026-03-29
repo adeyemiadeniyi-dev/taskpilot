@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 sys.path.append(str(BASE_DIR))
 
 from app.database import Base, SQLALCHEMY_DATABASE_URL  # type: ignore
-from app import models  # noqa: F401  # ensures Goal, Task are imported
+from app.api.v1 import models  # noqa: F401  # ensures Goal, Task are imported
 
 # ------------------------------------------------------------------------------
 

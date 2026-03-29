@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import List
 
-from app.schemas.planning import (
+from app.api.v1.schemas.planning import (
     PlanGenerationMilestone,
     PlanGenerationResponse,
     PlanGenerationRequest,

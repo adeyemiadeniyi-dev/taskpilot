@@ -1,56 +1,49 @@
 "use client";
-/* eslint-disable react-hooks/set-state-in-effect */
 
 import { useEffect, useState } from "react";
+import { createPlan, PlanResponse } from "@/lib/api";
 
 export default function PlanPage() {
-  const [plan, setPlan] = useState(null);
-  const [source, setSource] = useState("unknown"); // "backend" | "fallback" | "unknown"
+  const [plan, setPlan] = useState<PlanResponse | null>(null);
+  const [source, setSource] = useState<"backend" | "fallback" | "unknown">("unknown");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const storedPlan = window.localStorage.getItem("taskpilot-plan");
-    const storedSource = window.localStorage.getItem("taskpilot-plan-source");
-
-    if (storedPlan) {
-      setPlan(JSON.parse(storedPlan));
-      setSource(storedSource || "backend");
-    } else {
-      // Fallback dummy plan if user landed here directly
+  async function fetchPlan(goal = "Build TaskPilot workflow") {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await createPlan(goal);
+      setPlan(data);
+      setSource("backend");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch plan, using fallback data.");
       setPlan({
         goal: "Demo: Build TaskPilot agentic workflow",
-        deadline: null,
+        goal_id: 0,
         milestones: [
           {
-            id: 1,
             title: "Day 1 – Backend & agentic flow",
-            due: "2025-12-08",
             tasks: [
-              "Design task schema & /plan endpoint",
-              "Implement dummy AI planning service",
-              "Test backend response shape",
-            ],
-          },
-          {
-            id: 2,
-            title: "Day 2 – Frontend scaffold & UI",
-            due: "2025-12-09",
-            tasks: [
-              "Create Next.js + Tailwind scaffold",
-              "Connect frontend /plan endpoint",
-              "Render milestones & tasks dashboard",
+              { id: 1, title: "Design task schema & /plan endpoint", status: "pending" },
+              { id: 2, title: "Implement dummy AI planning service", status: "pending" },
             ],
           },
         ],
       });
       setSource("fallback");
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
+    fetchPlan();
   }, []);
 
-  if (!plan) {
-    return <p className="text-sm text-slate-400">Loading plan…</p>;
-  }
+  if (loading) return <p>Loading plan…</p>;
+  if (!plan) return <p>No plan available</p>;
 
   return (
     <section className="space-y-4">
@@ -60,15 +53,8 @@ export default function PlanPage() {
           <p className="text-sm text-slate-400">
             Goal: <span className="text-slate-100">{plan.goal}</span>
           </p>
-          {plan.deadline && (
-            <p className="text-xs text-slate-500">
-              Target deadline:{" "}
-              <span className="text-slate-200">{plan.deadline}</span>
-            </p>
-          )}
         </div>
 
-        {/* Tiny badge showing where the data came from */}
         <span
           className={`text-[10px] px-2 py-1 rounded-full border ${
             source === "backend"
@@ -80,30 +66,27 @@ export default function PlanPage() {
         </span>
       </div>
 
+      <button
+        onClick={() => fetchPlan("New Goal Name")}
+        className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+      >
+        Generate New Plan
+      </button>
+
       <div className="grid gap-4 md:grid-cols-2">
-        {plan.milestones?.map((m) => (
-          <article
-            key={m.id}
-            className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-2"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-sm md:text-base">
-                {m.title}
-              </h3>
-              {m.due && (
-                <span className="text-[10px] md:text-xs text-slate-400 bg-slate-950/60 border border-slate-800 rounded-full px-2 py-1">
-                  Due: {m.due}
-                </span>
-              )}
-            </div>
+        {plan.milestones.map((m, idx) => (
+          <article key={idx} className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-2">
+            <h3 className="font-semibold text-sm md:text-base">{m.title}</h3>
             <ul className="text-xs md:text-sm list-disc list-inside space-y-1 text-slate-300">
-              {m.tasks?.map((t, idx) => (
-                <li key={idx}>{t}</li>
+              {m.tasks.map((t) => (
+                <li key={t.id}>{t.title}</li>
               ))}
             </ul>
           </article>
         ))}
       </div>
+
+      {error && <p className="text-red-400">{error}</p>}
     </section>
   );
 }

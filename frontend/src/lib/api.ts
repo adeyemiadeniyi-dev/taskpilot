@@ -40,8 +40,6 @@ export type StatusResponse = {
 
 async function parseJsonOrThrow<T>(res: Response, url: string): Promise<T> {
   const contentType = res.headers.get("content-type") ?? "";
-
-  // Read body once (safe for both JSON + HTML)
   const bodyText = await res.text();
 
   if (!res.ok) {
@@ -65,28 +63,25 @@ async function parseJsonOrThrow<T>(res: Response, url: string): Promise<T> {
 }
 
 export async function createPlan(goal: string): Promise<PlanResponse> {
-  const url = `${BASE_URL}/api/v1/plan`;
+  const url = `${BASE_URL}/api/v1/goals/plan`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ goal }),
   });
-
   return parseJsonOrThrow<PlanResponse>(res, url);
 }
 
 export async function getStatus(goalId?: number): Promise<StatusResponse> {
   const params = goalId ? `?goal_id=${goalId}` : "";
-  const url = `${BASE_URL}/api/v1/status${params}`;
+  const url = `${BASE_URL}/api/v1/agent/status${params}`;
   const res = await fetch(url);
-
   return parseJsonOrThrow<StatusResponse>(res, url);
 }
 
 export async function healthCheck(): Promise<boolean> {
   const url = `${BASE_URL}/health`;
   const res = await fetch(url);
-
   if (!res.ok) {
     const txt = await res.text();
     throw new Error(`Backend unhealthy (${res.status}): ${txt.slice(0, 200)}`);

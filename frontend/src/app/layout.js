@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
               TaskPilot<span className="text-indigo-400">.ai</span>
             </h1>
             <span className="text-xs text-slate-400">
-              AI Agents Assemble Hackathon
+              AI-powered goal planning, execution tracking and workflow orchestration assistant.
             </span>
           </header>
 

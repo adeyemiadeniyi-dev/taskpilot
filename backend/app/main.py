@@ -1,12 +1,8 @@
-import psycopg
-from app.api.v1.routes.agent import router as agent_router
-from app.api.v1 import api_router
-from app.database import Base, engine
-from app.routes import goals, planning, tasks
-from fastapi import APIRouter, FastAPI
+from app.api.v1.routes import goals, tasks, planning, agent, automation
+from app.database import engine
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from app.routes import automation
 
 app = FastAPI(
     title="TaskPilot Backend",
@@ -25,8 +21,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -51,6 +47,10 @@ def health_check():
     return {"status": "ok"}
 
 
+
+app.include_router(goals.router, prefix="/api/v1")
+app.include_router(tasks.router, prefix="/api/v1")
+app.include_router(planning.router, prefix="/api/v1")
 app.include_router(automation.router, prefix="/api/v1")
-app.include_router(agent_router, prefix="/api/v1")
-app.include_router(api_router)
+app.include_router(agent.router, prefix="/api/v1")
+
